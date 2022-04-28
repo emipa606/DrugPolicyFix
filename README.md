@@ -5,6 +5,8 @@
 Update of peladors mod
 https://steamcommunity.com/sharedfiles/filedetails/?id=2000335507
 
+- German translation added, thanks Dimos!
+
 ![Image](https://i.imgur.com/pufA0kM.png)
 
 	
