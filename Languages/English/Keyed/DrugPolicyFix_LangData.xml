@@ -3,5 +3,6 @@
   <!-- Content -->
   <DrugPolicyFix.DoneNothing>Drug Policy Fix: Has checked all policies and found no new additions needed.</DrugPolicyFix.DoneNothing>
   <DrugPolicyFix.Feedback>Drug Policy Fix: Number of policies effected: {0}, with {1} drug references applied to all policies.</DrugPolicyFix.Feedback>
+  <DrugPolicyFix.Removed>Drug Policy Fix: Number of policies cleaned up: {0}, with {1} non-drugs removed from all policies.</DrugPolicyFix.Removed>
   <DrugPolicyFix.Sorted>Drug Policy Fix: Sorted {0} drug policies.</DrugPolicyFix.Sorted>
 </LanguageData>

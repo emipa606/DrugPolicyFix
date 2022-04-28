@@ -11,90 +11,120 @@ namespace DrugPolicyFix
         public static void CorrectPolicies()
         {
             var allDefsListForReading = DefDatabase<ThingDef>.AllDefsListForReading;
-            var num = 0;
-            var num2 = 0;
+            var policiesAddedToCount = 0;
+            var defsAddedCount = 0;
+            var policiesRemovedFromCount = 0;
+            var defsRemovedCount = 0;
             var allPolicies = Current.Game.drugPolicyDatabase.AllPolicies;
             if (allPolicies.Count > 0)
             {
+                // Collect together all known ThingDefs that are categorized as drugs
+                var allDrugDefs = new List<ThingDef>();
+                if (allDefsListForReading.Count > 0)
+                {
+                    foreach (var thingDef in allDefsListForReading)
+                    {
+                        if (IsDrug(thingDef))
+                        {
+                            allDrugDefs.AddDistinct(thingDef);
+                        }
+                    }
+                }
+
                 foreach (var drugPolicy in allPolicies)
                 {
-                    var list = new List<ThingDef>();
-                    if (allDefsListForReading.Count > 0)
+                    // Remove any non-drugs that might have found their way into existing policies (e.g. through use of the
+                    // Cherry Picker mod)
+                    var existingDrugPolicyEntries = NonPublicFields.DrugPolicyEntryList(drugPolicy);
+                    var filteredDrugPolicyEntries = new List<DrugPolicyEntry>();
+                    if (existingDrugPolicyEntries.Count > 0)
                     {
-                        foreach (var thingDef in allDefsListForReading)
+                        foreach (var drugPolicyEntry in existingDrugPolicyEntries)
                         {
-                            if (!IsDrug(thingDef, out _))
+                            if (IsDrug(drugPolicyEntry.drug))
                             {
-                                continue;
-                            }
-
-                            var b = false;
-                            var list2 = NonPublicFields.DrugPolicyEntryList(drugPolicy);
-                            if (list2.Count > 0)
-                            {
-                                foreach (var drugPolicyEntry in list2)
-                                {
-                                    if (thingDef != drugPolicyEntry.drug)
-                                    {
-                                        continue;
-                                    }
-
-                                    b = true;
-                                    break;
-                                }
-                            }
-
-                            if (!b)
-                            {
-                                list.AddDistinct(thingDef);
+                                filteredDrugPolicyEntries.AddDistinct(drugPolicyEntry);
                             }
                         }
                     }
 
-                    if (list.Count <= 0)
+                    if (existingDrugPolicyEntries.Count > filteredDrugPolicyEntries.Count)
+                    {
+                        defsRemovedCount = existingDrugPolicyEntries.Count - filteredDrugPolicyEntries.Count;
+                        policiesRemovedFromCount++;
+                        NonPublicFields.DrugPolicyEntryList(drugPolicy) = filteredDrugPolicyEntries;
+                    }
+
+                    // Find new drugs that aren't already in the policy to add
+                    var drugDefsToAdd = new List<ThingDef>();
+                    foreach (var thingDef in allDrugDefs)
+                    {
+                        var b = false;
+
+                        if (filteredDrugPolicyEntries.Count > 0)
+                        {
+                            foreach (var drugPolicyEntry in filteredDrugPolicyEntries)
+                            {
+                                if (thingDef != drugPolicyEntry.drug)
+                                {
+                                    continue;
+                                }
+
+                                b = true;
+                                break;
+                            }
+                        }
+
+                        if (!b)
+                        {
+                            drugDefsToAdd.AddDistinct(thingDef);
+                        }
+                    }
+
+                    if (drugDefsToAdd.Count <= 0)
                     {
                         continue;
                     }
 
-                    num++;
-                    foreach (var thingDef2 in list)
+                    policiesAddedToCount++;
+
+                    // Create drug policy entries from the ThingDef and add them
+                    foreach (var thingDef2 in drugDefsToAdd)
                     {
-                        num2++;
+                        defsAddedCount++;
                         var drugCategory2 = thingDef2.ingestible.drugCategory;
                         AddNewDrugToPolicy(drugPolicy, thingDef2, drugCategory2);
                     }
                 }
             }
 
-            string text = "DrugPolicyFix.DoneNothing".Translate();
-            if (num > 0)
+            // Log out what was done.
+            if (policiesAddedToCount == 0 && policiesRemovedFromCount == 0)
             {
-                text = "DrugPolicyFix.Feedback".Translate(num.ToString(), num2.ToString());
+                Log.Message("DrugPolicyFix.DoneNothing".Translate());
             }
 
-            Log.Message(text);
+            if (policiesAddedToCount > 0)
+            {
+                Log.Message("DrugPolicyFix.Feedback".Translate(policiesAddedToCount.ToString(), defsAddedCount.ToString()));
+            }
+
+            if (policiesRemovedFromCount > 0)
+            {
+                Log.Message("DrugPolicyFix.Removed".Translate(policiesRemovedFromCount.ToString(), defsRemovedCount.ToString()));
+            }
+
         }
 
         // Token: 0x06000002 RID: 2 RVA: 0x0000226C File Offset: 0x0000046C
-        public static bool IsDrug(ThingDef thingdef, out DrugCategory DC)
+        public static bool IsDrug(ThingDef thingdef)
         {
-            DC = DrugCategory.None;
-            if (thingdef?.ingestible == null)
+            var ingestible = thingdef?.ingestible;
+            var drugCategory = ingestible?.drugCategory;
+            if (ingestible == null || drugCategory == null || drugCategory == DrugCategory.None)
             {
                 return false;
             }
-
-            var ingestible = thingdef.ingestible;
-            var drugCategory = ingestible != null ? new DrugCategory?(ingestible.drugCategory) : null;
-            var drugCategory2 = DrugCategory.None;
-            var b = !((drugCategory.GetValueOrDefault() == drugCategory2) & (drugCategory != null));
-
-            if (!b)
-            {
-                return false;
-            }
-
-            DC = thingdef.ingestible.drugCategory;
             return true;
         }
 
