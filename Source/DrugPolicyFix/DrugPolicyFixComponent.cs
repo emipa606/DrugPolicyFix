@@ -4,7 +4,7 @@ namespace DrugPolicyFix;
 
 public class DrugPolicyFixComponent : GameComponent
 {
-    public bool fixedthisplay;
+    private bool fixedthisplay;
 
     public DrugPolicyFixComponent(Game game)
     {

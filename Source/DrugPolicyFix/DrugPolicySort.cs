@@ -7,9 +7,9 @@ namespace DrugPolicyFix;
 
 public static class DrugPolicySort
 {
-    public static void SortPolicy(DrugPolicy DP)
+    public static void SortPolicy(DrugPolicy drugPolicy)
     {
-        var list = NonPublicFields.DrugPolicyEntryList(DP);
+        var list = NonPublicFields.DrugPolicyEntryList(drugPolicy);
         var list2 = new List<DrugPolicyEntry>();
         if (list.Count <= 0)
         {
@@ -23,7 +23,7 @@ public static class DrugPolicySort
                 continue;
             }
 
-            CheckValues(DP, drugPolicyEntry, drugPolicyEntry.drug, out var drugPolicyEntry2);
+            checkValues(drugPolicyEntry, drugPolicyEntry.drug, out var drugPolicyEntry2);
             if (drugPolicyEntry2 != null)
             {
                 list2.AddDistinct(drugPolicyEntry2);
@@ -38,7 +38,7 @@ public static class DrugPolicySort
         var list3 = (from dpe in list2
             orderby dpe.drug.label
             select dpe).ToList();
-        NonPublicFields.DrugPolicyEntryList(DP) = list3;
+        NonPublicFields.DrugPolicyEntryList(drugPolicy) = list3;
     }
 
     public static void SortPolicies()
@@ -63,7 +63,7 @@ public static class DrugPolicySort
                         continue;
                     }
 
-                    CheckValues(drugPolicy, drugPolicyEntry, drugPolicyEntry.drug, out var drugPolicyEntry2);
+                    checkValues(drugPolicyEntry, drugPolicyEntry.drug, out var drugPolicyEntry2);
                     if (drugPolicyEntry2 != null)
                     {
                         list2.AddDistinct(drugPolicyEntry2);
@@ -86,18 +86,17 @@ public static class DrugPolicySort
         Log.Message("DrugPolicyFix.Sorted".Translate(num.ToString()));
     }
 
-    public static void CheckValues(DrugPolicy DP, DrugPolicyEntry DPE, ThingDef drug,
-        out DrugPolicyEntry DPEChecked)
+    private static void checkValues(DrugPolicyEntry dpe, ThingDef drug, out DrugPolicyEntry dpeChecked)
     {
-        DPEChecked = DPE;
+        dpeChecked = dpe;
         if (!DrugPolicyUtility.IsAddictive(drug))
         {
-            DPEChecked.allowedForAddiction = false;
+            dpeChecked.allowedForAddiction = false;
         }
 
         if (!drug.IsPleasureDrug)
         {
-            DPEChecked.allowedForJoy = false;
+            dpeChecked.allowedForJoy = false;
         }
     }
 }

@@ -22,7 +22,7 @@ public static class DrugPolicyFix
             {
                 foreach (var thingDef in allDefsListForReading)
                 {
-                    if (IsDrug(thingDef))
+                    if (isDrug(thingDef))
                     {
                         allDrugDefs.AddDistinct(thingDef);
                     }
@@ -39,7 +39,7 @@ public static class DrugPolicyFix
                 {
                     foreach (var drugPolicyEntry in existingDrugPolicyEntries)
                     {
-                        if (IsDrug(drugPolicyEntry.drug))
+                        if (isDrug(drugPolicyEntry.drug))
                         {
                             filteredDrugPolicyEntries.AddDistinct(drugPolicyEntry);
                         }
@@ -91,20 +91,21 @@ public static class DrugPolicyFix
                 {
                     defsAddedCount++;
                     var drugCategory2 = thingDef2.ingestible.drugCategory;
-                    AddNewDrugToPolicy(drugPolicy, thingDef2, drugCategory2);
+                    addNewDrugToPolicy(drugPolicy, thingDef2, drugCategory2);
                 }
             }
         }
 
-        // Log out what was done.
-        if (policiesAddedToCount == 0 && policiesRemovedFromCount == 0)
+        switch (policiesAddedToCount)
         {
-            Log.Message("DrugPolicyFix.DoneNothing".Translate());
-        }
-
-        if (policiesAddedToCount > 0)
-        {
-            Log.Message("DrugPolicyFix.Feedback".Translate(policiesAddedToCount.ToString(), defsAddedCount.ToString()));
+            // Log out what was done.
+            case 0 when policiesRemovedFromCount == 0:
+                Log.Message("DrugPolicyFix.DoneNothing".Translate());
+                break;
+            case > 0:
+                Log.Message("DrugPolicyFix.Feedback".Translate(policiesAddedToCount.ToString(),
+                    defsAddedCount.ToString()));
+                break;
         }
 
         if (policiesRemovedFromCount > 0)
@@ -114,47 +115,47 @@ public static class DrugPolicyFix
         }
     }
 
-    public static bool IsDrug(ThingDef thingdef)
+    private static bool isDrug(ThingDef thingDef)
     {
-        var ingestible = thingdef?.ingestible;
+        var ingestible = thingDef?.ingestible;
         var drugCategory = ingestible?.drugCategory;
         return ingestible != null && drugCategory != DrugCategory.None;
     }
 
-    public static void AddNewDrugToPolicy(DrugPolicy dp, ThingDef newdrug, DrugCategory DC)
+    private static void addNewDrugToPolicy(DrugPolicy drugPolicy, ThingDef newDrug, DrugCategory drugCategory)
     {
         var drugPolicyEntry = new DrugPolicyEntry
         {
-            drug = newdrug, allowedForAddiction = false, allowedForJoy = false, allowScheduled = false
+            drug = newDrug, allowedForAddiction = false, allowedForJoy = false, allowScheduled = false
         };
-        if (dp.label == "SocialDrugs".Translate())
+        if (drugPolicy.label == "SocialDrugs".Translate())
         {
-            if (DC == DrugCategory.Social)
+            if (drugCategory == DrugCategory.Social)
             {
                 drugPolicyEntry.allowedForJoy = true;
             }
         }
-        else if (dp.label == "Unrestricted".Translate())
+        else if (drugPolicy.label == "Unrestricted".Translate())
         {
-            if (newdrug.IsPleasureDrug)
+            if (newDrug.IsPleasureDrug)
             {
                 drugPolicyEntry.allowedForJoy = true;
             }
         }
-        else if (dp.label == "OneDrinkPerDay".Translate() &&
-                 (DrugPolicyUtility.IsAlcohol(newdrug) || DrugPolicyUtility.IsSmokey(newdrug)) &&
-                 newdrug.IsPleasureDrug)
+        else if (drugPolicy.label == "OneDrinkPerDay".Translate() &&
+                 (DrugPolicyUtility.IsAlcohol(newDrug) || DrugPolicyUtility.IsSmokey(newDrug)) &&
+                 newDrug.IsPleasureDrug)
         {
             drugPolicyEntry.allowedForJoy = true;
         }
 
-        if (DrugPolicyUtility.IsAddictive(newdrug))
+        if (DrugPolicyUtility.IsAddictive(newDrug))
         {
             drugPolicyEntry.allowedForAddiction = true;
         }
 
-        var list = NonPublicFields.DrugPolicyEntryList(dp);
+        var list = NonPublicFields.DrugPolicyEntryList(drugPolicy);
         list.AddDistinct(drugPolicyEntry);
-        NonPublicFields.DrugPolicyEntryList(dp) = list;
+        NonPublicFields.DrugPolicyEntryList(drugPolicy) = list;
     }
 }

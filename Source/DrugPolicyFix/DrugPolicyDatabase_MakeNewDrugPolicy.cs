@@ -3,8 +3,8 @@ using RimWorld;
 
 namespace DrugPolicyFix;
 
-[HarmonyPatch(typeof(DrugPolicyDatabase), "MakeNewDrugPolicy")]
-public class MakeNewDrugPolicy_Patch
+[HarmonyPatch(typeof(DrugPolicyDatabase), nameof(DrugPolicyDatabase.MakeNewDrugPolicy))]
+public class DrugPolicyDatabase_MakeNewDrugPolicy
 {
     [HarmonyPostfix]
     [HarmonyPriority(0)]

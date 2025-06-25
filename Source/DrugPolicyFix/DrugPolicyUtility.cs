@@ -5,14 +5,14 @@ namespace DrugPolicyFix;
 
 public class DrugPolicyUtility
 {
-    public static bool IsAlcohol(ThingDef Drug)
+    public static bool IsAlcohol(ThingDef drug)
     {
-        if (Drug?.comps == null)
+        if (drug?.comps == null)
         {
             return false;
         }
 
-        var comps = Drug.comps;
+        var comps = drug.comps;
         if (comps.Count <= 0)
         {
             return false;
@@ -21,9 +21,9 @@ public class DrugPolicyUtility
         using var enumerator = comps.GetEnumerator();
         while (enumerator.MoveNext())
         {
-            CompProperties_Drug compProperties_Drug;
-            if ((compProperties_Drug = enumerator.Current as CompProperties_Drug) != null &&
-                compProperties_Drug.chemical == ChemicalDefOf.Alcohol)
+            CompProperties_Drug compPropertiesDrug;
+            if ((compPropertiesDrug = enumerator.Current as CompProperties_Drug) != null &&
+                compPropertiesDrug.chemical == ChemicalDefOf.Alcohol)
             {
                 return true;
             }
@@ -32,14 +32,14 @@ public class DrugPolicyUtility
         return false;
     }
 
-    public static bool IsSmokey(ThingDef Drug)
+    public static bool IsSmokey(ThingDef drug)
     {
-        if (Drug?.comps == null)
+        if (drug?.comps == null)
         {
             return false;
         }
 
-        var comps = Drug.comps;
+        var comps = drug.comps;
         if (comps.Count <= 0)
         {
             return false;
@@ -59,8 +59,8 @@ public class DrugPolicyUtility
         return false;
     }
 
-    public static bool IsAddictive(ThingDef Drug)
+    public static bool IsAddictive(ThingDef drug)
     {
-        return Drug.IsAddictiveDrug;
+        return drug.IsAddictiveDrug;
     }
 }
