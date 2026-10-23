@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
 using Verse;
 
@@ -20,12 +21,9 @@ public static class DrugPolicyFix
             var allDrugDefs = new List<ThingDef>();
             if (allDefsListForReading.Count > 0)
             {
-                foreach (var thingDef in allDefsListForReading)
+                foreach (var thingDef in allDefsListForReading.Where(isDrug))
                 {
-                    if (isDrug(thingDef))
-                    {
-                        allDrugDefs.AddDistinct(thingDef);
-                    }
+                    allDrugDefs.AddDistinct(thingDef);
                 }
             }
 
@@ -37,12 +35,9 @@ public static class DrugPolicyFix
                 var filteredDrugPolicyEntries = new List<DrugPolicyEntry>();
                 if (existingDrugPolicyEntries.Count > 0)
                 {
-                    foreach (var drugPolicyEntry in existingDrugPolicyEntries)
+                    foreach (var drugPolicyEntry in existingDrugPolicyEntries.Where(entry => isDrug(entry.drug)))
                     {
-                        if (isDrug(drugPolicyEntry.drug))
-                        {
-                            filteredDrugPolicyEntries.AddDistinct(drugPolicyEntry);
-                        }
+                        filteredDrugPolicyEntries.AddDistinct(drugPolicyEntry);
                     }
                 }
 

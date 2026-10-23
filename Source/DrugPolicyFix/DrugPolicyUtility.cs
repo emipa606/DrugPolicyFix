@@ -3,7 +3,7 @@ using Verse;
 
 namespace DrugPolicyFix;
 
-public class DrugPolicyUtility
+public static class DrugPolicyUtility
 {
     public static bool IsAlcohol(ThingDef drug)
     {
